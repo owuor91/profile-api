@@ -1,34 +1,58 @@
 import sqlite3
-from flask_restful import Resource, reqparse
+from flask import request
+from flask_restful import Resource
 from models.user_model import UserModel
 
 class User(Resource):
-    parser = reqparse.RequestParser()
-    parser.add_argument('firstname',
-    type = str,
-    required = True,
-    help = 'please provide first name')
-    parser.add_argument('lastname',
-    type = str,
-    required = True,
-    help = 'please provide last name')
-    parser.add_argument('password',
-    type = str,
-    required = True,
-    help = 'please provide password')
-    parser.add_argument('phonenumber',
-    type = str,
-    required = True,
-    help = 'please provide phonenumber')
-    parser.add_argument('avatar',
-    type = str)
 
     def post(self):
-        data = User.parser.parse_args()
+        if UserModel.find_user_by_phonenumber(self.get_value('phonenumber')):
+            return {'message': 'a user with the number {} already exists'.format(self.getValue('phonenumber'))},400
 
-        if UserModel.find_user_by_phonenumber(data['phonenumber']):
-            return {'message': 'a user with the number {} already exusts'.format(data['phonenumber'])},400
-
-        user = UserModel(data['firstname'], data['lastname'], data['password'], data['phonenumber'], data['avatar'])
+        user = UserModel(self.get_value('firstname'), self.get_value('lastname'), self.get_value('password'), self.get_value('phonenumber'), self.get_value('avatar'))
         user.save_to_db()
         return {'message': 'user created successfully'}, 201
+
+    def get(self, user_id):
+        user = UserModel.find_user_by_id(user_id)
+
+        if user:
+            return user.to_json(), 200
+        return {'message': 'user not found'},404
+
+    def put(self, user_id):
+        user = UserModel.find_user_by_id(user_id)
+
+        if user is None:
+            return {'message': 'the user you are trying to edit doesn\'t exist' }
+
+        firstname = self.get_value('firstname')
+        lastname = self.get_value('lastname')
+        avatar = self.get_value('avatar')
+
+        if firstname:
+            user.firstname = firstname
+        if lastname:
+            user.lastname = lastname
+        if avatar:
+            user.avatar = avatar
+
+        user.save_to_db()
+        return user.to_json()
+
+    def get_value(self, key):
+        return request.form.get(key)
+
+
+class UserList(Resource):
+    def get(self):
+        return {'users': [user.to_json() for user in UserModel.query.all()]}
+
+class UserByNumber(Resource):
+    def get(self):
+        phonenumber = request.args.get('phonenumber')
+        user = UserModel.find_user_by_phonenumber(phonenumber)
+
+        if user:
+            return user.to_json(), 200
+        return {'message': 'user not found'}, 404

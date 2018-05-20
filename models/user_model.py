@@ -29,3 +29,6 @@ class UserModel(db.Model):
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
+
+    def to_json(self):
+        return {'id':self.id, 'firstname': self.firstname, 'lastname': self.lastname, 'phonenumber': self.phonenumber, 'avatar': self.avatar}

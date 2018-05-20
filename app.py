@@ -1,7 +1,7 @@
 import os
 from flask import Flask
 from flask_restful import Api
-from resources.user import User
+from resources.user import User, UserList, UserByNumber
 from db import db
 
 app = Flask(__name__)
@@ -18,7 +18,9 @@ def create_tables():
     db.create_all()
 
 
-api.add_resource(User, '/user')
+api.add_resource(User, '/user', '/user/<int:user_id>')
+api.add_resource(UserList, '/users')
+api.add_resource(UserByNumber, '/uzer')
 
 if __name__ == '__main__':
 	# from db import db
