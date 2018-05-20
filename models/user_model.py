@@ -1,4 +1,3 @@
-import sqlite3
 from db import db
 
 class UserModel(db.Model):
@@ -10,6 +9,8 @@ class UserModel(db.Model):
     password = db.Column(db.String)
     phonenumber = db.Column(db.String(80))
     avatar = db.Column(db.String)
+
+    messages = db.relationship('MessageModel', lazy='dynamic')
 
     def __init__(self, firstname, lastname, password, phonenumber, avatar):
         self.firstname = firstname

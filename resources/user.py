@@ -1,7 +1,7 @@
-import sqlite3
 from flask import request
 from flask_restful import Resource
 from models.user_model import UserModel
+from models.message_model import MessageModel
 
 class User(Resource):
 
@@ -48,6 +48,7 @@ class UserList(Resource):
     def get(self):
         return {'users': [user.to_json() for user in UserModel.query.all()]}
 
+
 class UserByNumber(Resource):
     def get(self):
         phonenumber = request.args.get('phonenumber')
@@ -56,3 +57,8 @@ class UserByNumber(Resource):
         if user:
             return user.to_json(), 200
         return {'message': 'user not found'}, 404
+
+
+class UserMessages(Resource):
+    def get(self, user_id):
+        return {'messages': [message.to_json() for message in MessageModel.list_messages_by_author(user_id)]}
